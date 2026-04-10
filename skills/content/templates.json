@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "templates": {
+    "blog": {
+      "structure": ["hook", "context", "body", "takeaway", "cta"],
+      "word_count": { "min": 800, "max": 2500 },
+      "required_elements": ["meta_description", "featured_image_alt", "internal_links"]
+    },
+    "article": {
+      "structure": ["abstract", "introduction", "sections", "conclusion", "references"],
+      "word_count": { "min": 1500, "max": 5000 },
+      "required_elements": ["meta_description", "citations", "author_bio"]
+    },
+    "case-study": {
+      "structure": ["challenge", "approach", "solution", "results", "testimonial"],
+      "word_count": { "min": 1000, "max": 3000 },
+      "required_elements": ["metrics", "quotes", "before_after"]
+    },
+    "social": {
+      "platforms": {
+        "linkedin": { "max_chars": 3000, "hashtags": 5 },
+        "twitter": { "max_chars": 280, "hashtags": 3 },
+        "instagram": { "max_chars": 2200, "hashtags": 20 }
+      }
+    }
+  }
+}

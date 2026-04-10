@@ -1,0 +1,96 @@
+{
+  "version": "1.0.0",
+  "templates": {
+    "landing": {
+      "description": "Conversion-focused landing page with hero, benefits, social proof, and CTA",
+      "default_sections": ["hero", "benefits", "testimonials", "cta"],
+      "required_spec_fields": ["title", "purpose", "cta_text", "cta_url"]
+    },
+    "blog": {
+      "description": "Long-form content page with reading time, author bio, and related posts",
+      "default_sections": ["header", "content", "author", "related"],
+      "required_spec_fields": ["title", "purpose"]
+    },
+    "product": {
+      "description": "Product or service showcase with features, pricing, and comparison",
+      "default_sections": ["hero", "features", "pricing", "faq", "cta"],
+      "required_spec_fields": ["title", "purpose", "cta_text", "cta_url"]
+    },
+    "event": {
+      "description": "Event or retreat page with schedule, speakers, venue, and registration",
+      "default_sections": ["hero", "about", "schedule", "facilitators", "venue", "register"],
+      "required_spec_fields": ["title", "purpose", "cta_text", "cta_url"]
+    },
+    "minimal": {
+      "description": "Clean single-section page — announcement, coming soon, or redirect",
+      "default_sections": ["hero"],
+      "required_spec_fields": ["title"]
+    }
+  },
+  "sections": {
+    "hero": {
+      "description": "Full-width hero with headline, subheadline, CTA button, and optional background",
+      "props": ["title", "subtitle", "cta_text", "cta_url", "background_style"]
+    },
+    "benefits": {
+      "description": "3-4 benefit cards with icons and descriptions",
+      "props": ["items[].icon", "items[].title", "items[].description"]
+    },
+    "testimonials": {
+      "description": "Social proof section with 2-3 quotes",
+      "props": ["items[].quote", "items[].name", "items[].role"]
+    },
+    "cta": {
+      "description": "Final call-to-action section with urgency/scarcity messaging",
+      "props": ["headline", "body", "cta_text", "cta_url"]
+    },
+    "features": {
+      "description": "Feature grid or alternating feature rows",
+      "props": ["items[].title", "items[].description", "items[].icon"]
+    },
+    "pricing": {
+      "description": "Pricing cards with plan comparison",
+      "props": ["plans[].name", "plans[].price", "plans[].features", "plans[].cta_text"]
+    },
+    "schedule": {
+      "description": "Timeline or agenda for events",
+      "props": ["items[].time", "items[].title", "items[].description"]
+    },
+    "facilitators": {
+      "description": "Speaker/facilitator bios with photos",
+      "props": ["items[].name", "items[].role", "items[].bio"]
+    },
+    "faq": {
+      "description": "Accordion-style FAQ section",
+      "props": ["items[].question", "items[].answer"]
+    },
+    "header": {
+      "description": "Article header with title, date, reading time, author",
+      "props": ["title", "date", "reading_time", "author"]
+    },
+    "content": {
+      "description": "Long-form content area (agent generates based on spec purpose)",
+      "props": ["body"]
+    },
+    "author": {
+      "description": "Author bio card",
+      "props": ["name", "bio", "image_url"]
+    },
+    "about": {
+      "description": "About section with narrative text",
+      "props": ["headline", "body"]
+    },
+    "venue": {
+      "description": "Location details with optional map embed",
+      "props": ["name", "address", "description"]
+    },
+    "register": {
+      "description": "Registration form or external link",
+      "props": ["headline", "cta_text", "cta_url"]
+    },
+    "related": {
+      "description": "Related content cards",
+      "props": ["items[].title", "items[].url", "items[].excerpt"]
+    }
+  }
+}

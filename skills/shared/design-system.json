@@ -1,0 +1,85 @@
+{
+  "brands": {
+    "aob": {
+      "name": "Alchemy of Breath",
+      "colors": {
+        "primary": "#2E5090",
+        "secondary": "#E8913A",
+        "background": "#FAFAF8",
+        "text": "#1A1A2E",
+        "muted": "#6B7280"
+      },
+      "typography": {
+        "heading": "Montserrat",
+        "body": "Open Sans",
+        "sizes": {
+          "hero": "3.5rem",
+          "h1": "2.5rem",
+          "h2": "2rem",
+          "h3": "1.5rem",
+          "body": "1.125rem",
+          "small": "0.875rem"
+        }
+      },
+      "spacing": {
+        "section": "6rem",
+        "element": "2rem",
+        "tight": "1rem"
+      }
+    },
+    "builderbee": {
+      "name": "BuilderBee",
+      "colors": {
+        "primary": "#F59E0B",
+        "secondary": "#1F2937",
+        "background": "#FFFFFF",
+        "text": "#111827",
+        "muted": "#9CA3AF"
+      },
+      "typography": {
+        "heading": "Inter",
+        "body": "Inter",
+        "sizes": {
+          "hero": "3rem",
+          "h1": "2.25rem",
+          "h2": "1.75rem",
+          "h3": "1.25rem",
+          "body": "1rem",
+          "small": "0.875rem"
+        }
+      },
+      "spacing": {
+        "section": "5rem",
+        "element": "1.5rem",
+        "tight": "0.75rem"
+      }
+    },
+    "centaurion": {
+      "name": "Centaurion.me",
+      "colors": {
+        "primary": "#6366F1",
+        "secondary": "#0F172A",
+        "background": "#0F172A",
+        "text": "#F8FAFC",
+        "muted": "#94A3B8"
+      },
+      "typography": {
+        "heading": "Space Grotesk",
+        "body": "Inter",
+        "sizes": {
+          "hero": "3.5rem",
+          "h1": "2.5rem",
+          "h2": "2rem",
+          "h3": "1.5rem",
+          "body": "1rem",
+          "small": "0.875rem"
+        }
+      },
+      "spacing": {
+        "section": "6rem",
+        "element": "2rem",
+        "tight": "1rem"
+      }
+    }
+  }
+}
