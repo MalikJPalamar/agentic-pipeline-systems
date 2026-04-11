@@ -1,0 +1,75 @@
+name: "📝 Content Pipeline"
+
+on:
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: 'JSON spec eg {"title":"Blog Title","type":"blog","purpose":"Explain X","audience":"developers","brand":"centaurion","tone":"educational","keywords":["ai","agents"],"word_count_target":1500}'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate content with Claude
+        run: |
+          SPEC='${{ github.event.inputs.spec }}'
+          TEMPLATES=$(cat skills/content/templates.json)
+
+          TITLE=$(echo "$SPEC" | node -e "const s=require('fs').readFileSync('/dev/stdin','utf8'); console.log(JSON.parse(s).title || 'untitled')")
+          TYPE=$(echo "$SPEC" | node -e "const s=require('fs').readFileSync('/dev/stdin','utf8'); console.log(JSON.parse(s).type || 'blog')")
+          DIRNAME=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
+          mkdir -p "content/${TYPE}/${DIRNAME}"
+
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "$(node -e "
+              const spec = JSON.parse(process.argv[1]);
+              const prompt = 'You are the UAPP Content Agent. Write publish-ready content in Markdown.\n\nSPEC: ' + JSON.stringify(spec) + '\n\nTEMPLATES: ' + process.argv[2] + '\n\nRULES:\n- Output ONLY Markdown content, no fences\n- Include YAML frontmatter (title, description, date, author, keywords)\n- Follow the template structure for this content type\n- Hit the target word count\n- Natural keyword placement (not stuffed)\n- End with a clear CTA\n- Professional, engaging tone matching spec';
+              console.log(JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 8000,
+                messages: [{role: 'user', content: prompt}]
+              }));
+            " "$SPEC" "$TEMPLATES")")
+
+          echo "$RESPONSE" | node -e "
+            const data = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+            const text = data.content?.[0]?.text || '';
+            const clean = text.replace(/^\`\`\`markdown\n?/, '').replace(/\n?\`\`\`$/, '');
+            process.stdout.write(clean);
+          " > "content/${TYPE}/${DIRNAME}/index.md"
+
+          echo "DIRNAME=${DIRNAME}" >> $GITHUB_ENV
+          echo "TITLE=${TITLE}" >> $GITHUB_ENV
+          echo "TYPE=${TYPE}" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "content: ${{ env.TITLE }}"
+          title: "[content] ${{ env.TITLE }}"
+          body: |
+            ## Auto-Generated Content
+
+            **Type:** ${{ env.TYPE }}
+            **Spec:** `${{ github.event.inputs.spec }}`
+          branch: "auto/content-${{ env.DIRNAME }}"
+          labels: auto-generated,content-pipeline

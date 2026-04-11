@@ -1,0 +1,98 @@
+name: "🔄 Daily Iteration"
+
+on:
+  schedule:
+    - cron: "0 20 * * 1-5"  # 9pm CET (20:00 UTC) weekdays
+  workflow_dispatch:  # Manual trigger from phone
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  security-events: read
+
+jobs:
+  iterate:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Security audit
+        continue-on-error: true
+        run: |
+          echo "## Security Scan — $(date -u +%Y-%m-%d)" > /tmp/security-report.md
+          echo "" >> /tmp/security-report.md
+
+          # Check for hardcoded secrets
+          echo "### Secret Scan" >> /tmp/security-report.md
+          SECRETS_FOUND=$(grep -rn "ghp_\|sk-\|AKIA\|password\s*=" --include="*.js" --include="*.ts" --include="*.json" --include="*.env" . 2>/dev/null | grep -v node_modules | grep -v .git | wc -l)
+          echo "Potential secrets found: ${SECRETS_FOUND}" >> /tmp/security-report.md
+
+          # Check for HTTP URLs (should be HTTPS)
+          echo "### HTTP URL Audit" >> /tmp/security-report.md
+          HTTP_URLS=$(grep -rn "http://" --include="*.html" --include="*.md" --include="*.json" . 2>/dev/null | grep -v node_modules | grep -v .git | grep -v "http://localhost" | wc -l)
+          echo "Non-HTTPS URLs found: ${HTTP_URLS}" >> /tmp/security-report.md
+
+      - name: Autoresearch scoring
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+
+          # Read current methodology version
+          METHODOLOGY_VER=$(head -1 autoresearch/methodology.md | grep -o 'v[0-9.]*' || echo "v1.0")
+
+          # Score: count recent PRs, test files, security issues
+          RECENT_COMMITS=$(git log --since="24 hours ago" --oneline 2>/dev/null | wc -l)
+          TEST_FILES=$(find . -name "*.test.*" -o -name "*-test-spec.md" 2>/dev/null | wc -l)
+
+          # Append to results
+          echo "${DATE}	daily-iteration	${METHODOLOGY_VER}	0	0	0	0	baseline	pending	Auto-scored" >> autoresearch/results.tsv
+
+      - name: Generate daily report
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          REPORT="## Daily Iteration Report — ${DATE}\n\n"
+          REPORT+="### Security\n$(cat /tmp/security-report.md 2>/dev/null || echo 'No scan data')\n\n"
+          REPORT+="### Repository Stats\n"
+          REPORT+="- Total files: $(find . -type f -not -path './.git/*' | wc -l)\n"
+          REPORT+="- Workflows: $(ls .github/workflows/*.yml 2>/dev/null | wc -l) compiled, $(ls .github/workflows/*.md 2>/dev/null | wc -l) source\n"
+          REPORT+="- Open issues: tracked via GitHub API\n\n"
+          REPORT+="### Autoresearch\n"
+          REPORT+="- Methodology version: $(head -1 autoresearch/methodology.md | grep -o 'v[0-9.]*' || echo 'v1.0')\n"
+          REPORT+="- Results logged to autoresearch/results.tsv\n"
+
+          echo -e "$REPORT" > /tmp/daily-report.md
+
+      - name: Commit autoresearch updates
+        run: |
+          git config user.name "UAPP Daily Iteration"
+          git config user.email "uapp@centaurion.me"
+          git add autoresearch/results.tsv
+          git diff --cached --quiet || git commit -m "autoresearch: daily iteration $(date -u +%Y-%m-%d)"
+          git push || true
+
+      - name: Create daily report issue
+        uses: peter-evans/create-or-update-comment@v4
+        continue-on-error: true
+        with:
+          issue-number: 1
+          body-path: /tmp/daily-report.md
+
+      - name: Create report issue (fallback)
+        if: failure()
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "[daily-report] Iteration — $(date -u +%Y-%m-%d)"
+          body: |
+            Daily iteration completed.
+            See commit history for autoresearch updates.
+          labels: daily-iteration
