@@ -71,13 +71,24 @@ jobs:
 
           echo -e "$REPORT" > /tmp/daily-report.md
 
-      - name: Commit autoresearch updates
+      - name: Commit and push autoresearch updates
         run: |
           git config user.name "UAPP Daily Iteration"
           git config user.email "uapp@centaurion.me"
           git add autoresearch/results.tsv
-          git diff --cached --quiet || git commit -m "autoresearch: daily iteration $(date -u +%Y-%m-%d)"
-          git push || true
+          git diff --cached --quiet && exit 0
+          git commit -m "autoresearch: daily iteration $(date -u +%Y-%m-%d)"
+          for attempt in 1 2 3; do
+            git push && exit 0
+            [ "$attempt" -lt 3 ] && sleep 5
+          done
+          gh issue create \
+            --title "Push failed: daily iteration $(date -u +%Y-%m-%d)" \
+            --body "git push failed after 3 retries in the daily iteration workflow." \
+            --label "iteration-failed"
+          exit 1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create daily report issue
         uses: peter-evans/create-or-update-comment@v4
