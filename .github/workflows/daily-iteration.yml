@@ -82,6 +82,7 @@ jobs:
             git push && exit 0
             [ "$attempt" -lt 3 ] && sleep 5
           done
+          gh label create iteration-failed --color B60205 --description "Daily iteration push failed" --force >/dev/null 2>&1 || true
           gh issue create \
             --title "Push failed: daily iteration $(date -u +%Y-%m-%d)" \
             --body "git push failed after 3 retries in the daily iteration workflow." \
